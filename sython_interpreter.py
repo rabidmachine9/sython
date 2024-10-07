@@ -153,6 +153,8 @@ class SythonInterpreter:
                         result *= num
                     return result
                 elif op == '/':
+                    if args[1] == 0:
+                        raise ZeroDivisionError("Division by zero is undefined")  # Raise an error for division by zero
                     return args[0] / args[1]
 
             # Function call
