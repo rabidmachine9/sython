@@ -4,7 +4,7 @@
 
 ## Run Tests
 
-`$ python sython_test.py`
+`$ python test_sython_interpreter.py`
 
 ## Run Example file
 
