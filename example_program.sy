@@ -1,0 +1,23 @@
+(define (factorial n)
+    (if (= n 0)
+        1
+        (* n (factorial (- n 1)))
+    )
+)
+
+(define (square x)
+    (* x x)
+)
+
+(define (even-or-odd n)
+    (if (= (mod n 2) 0)
+        'even
+        'odd
+    )
+)
+
+(factorial 5)
+(square 4)
+(even-or-odd 3)
+(even-or-odd 4)
+(+ (factorial 3) (square 2))
