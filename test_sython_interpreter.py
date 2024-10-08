@@ -130,7 +130,10 @@ class TestSythonInterpreter(unittest.TestCase):
         self.assertEqual(self.sy.run("(my-lambda 1)"), 'no')
 
     
-    
+    def test_map(self):
+        self.sy.run("(define square (lambda (x) (* x x)))")
+        self.assertEqual(self.sy.run("(map square '(1 2 3 4 5))"), [1, 4, 9, 16, 25])
+        self.assertEqual(self.sy.run("(map square '(6 7 8))"), [36, 49, 64])
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
