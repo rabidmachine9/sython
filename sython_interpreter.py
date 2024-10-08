@@ -87,7 +87,8 @@ class SythonInterpreter:
             '#t': True,                 # True value
             '#f': False,                # False value
             'display': self._display_fn,
-            'map': self._map_fn  # Add map to the environment
+            'map': self._map_fn,  # Add map to the environment
+            'filter': self._filter_fn,
         }
         return env
 
@@ -95,6 +96,13 @@ class SythonInterpreter:
     def _map_fn(self, func, lst):
         """Applies a function to each element in the list."""
         return [func(x) for x in lst]
+
+    def _filter_fn(self, predicate, lst):
+        """Custom filter function implementation."""
+        if not isinstance(lst, list):
+            raise TypeError("filter expects a list as the second argument")
+        # Apply the predicate (lambda) to each element and filter those that return True
+        return [x for x in lst if predicate(x)]
 
     def _length(self, x):
         if isinstance(x, (list, str)):

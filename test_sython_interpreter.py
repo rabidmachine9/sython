@@ -135,5 +135,11 @@ class TestSythonInterpreter(unittest.TestCase):
         self.assertEqual(self.sy.run("(map square '(1 2 3 4 5))"), [1, 4, 9, 16, 25])
         self.assertEqual(self.sy.run("(map square '(6 7 8))"), [36, 49, 64])
 
+    def test_filter(self):
+        self.sy.run("(define is-even (lambda (x) (= (mod x 2) 0)))")
+        self.assertEqual(self.sy.run("(filter is-even '(1 2 3 4 5 6))"), [2, 4, 6])
+        self.assertEqual(self.sy.run("(filter is-even '(7 8 9 10))"), [8, 10])
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
