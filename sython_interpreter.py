@@ -44,13 +44,14 @@ class SythonInterpreter:
     # Convert token to a number if possible, otherwise keep as a symbol
     def atom(self, token):
         try:
-            return int(token)
+            return int(token)  # Check if it's an integer
         except ValueError:
             try:
-                return float(token)
+                return float(token)  # Check if it's a float
             except ValueError:
-                if token.startswith('"') and token.endswith('"'):  # Handle strings
-                    return token[1:-1]
+                # Check if it's a string (starts and ends with quotes)
+                if token.startswith('"') and token.endswith('"'):
+                    return token  # Keep the quotes for now, evaluate will handle them later
                 else:
                     return Symbol(token)  # Anything else is treated as a symbol
 
@@ -74,8 +75,15 @@ class SythonInterpreter:
             'cons': lambda x, y: [x] + (y if isinstance(y, list) else [y]),  # Create a new list with x as head and y as tail
             '#t': True,                 # True value
             '#f': False,                # False value
+            'display': self._display_fn,
         }
         return env
+
+    def _display_fn(self, *args):
+        """Custom display function for the interpreter."""
+        output = ' '.join(map(str, args))  # Convert all arguments to strings
+        print(output, end='')  # Print without a newline
+        return None  # Typically, display does not return a value
 
     # Create a new environment with parameters bound to argument values
     def extend_env(self, params, args):
@@ -88,8 +96,13 @@ class SythonInterpreter:
         if env is None:
             env = self.env
         while True:  # Use a loop to simulate TCO instead of recursive calls
-            if isinstance(expr, str):  # variable reference
-                if self.debug:
+            
+            if isinstance(expr, str):  # variable reference or string
+                if expr.startswith('"') and expr.endswith('"'):
+                    if self.debug:
+                        print(f"[DEBUG] Evaluating string literal: {expr}")
+                    return expr[1:-1]  # Return the string literal without the quotes
+                elif self.debug:
                     print(f"[DEBUG] Evaluating variable: {expr}")
                 return env[expr]
             elif not isinstance(expr, list):  # constant literal
@@ -140,9 +153,19 @@ class SythonInterpreter:
             elif op == 'cons':
                 return env[op](self.evaluate(expr[1], env), self.evaluate(expr[2], env))
 
+            elif op == 'display':
+                 # Evaluate each argument and pass them to _display_fn
+                args = [self.evaluate(arg, env) for arg in expr[1:]]
+                self._display_fn(*args)  # Call _display_fn with evaluated arguments
+                return None  # Display typically does not return a value
+
             # Handle arithmetic operations
             elif op in {'+', '-', '*', '/'}:
                 args = [self.evaluate(arg, env) for arg in expr[1:]]
+                # Check if all arguments are numbers
+                if not all(isinstance(arg, (int, float)) for arg in args):
+                    raise TypeError(f"Operator '{op}' requires all arguments to be numbers, got: {args}")
+                
                 if op == '+':
                     return sum(args)
                 elif op == '-':

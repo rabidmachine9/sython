@@ -18,7 +18,7 @@ def repl():
 
 def run_script(file_path):
     """Run a .sy script file."""
-    sython = SythonInterpreter(debug=False)  # Instantiate the interpreter
+    sython = SythonInterpreter(debug=True)  # Instantiate the interpreter
     with open(file_path, 'r') as f:
         code = f.read()
     result = sython.run(code)  # Use the instance's run method

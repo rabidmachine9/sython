@@ -1,5 +1,8 @@
 import unittest
 from sython_interpreter import SythonInterpreter
+from io import StringIO
+from unittest.mock import patch
+
 
 class TestSythonInterpreter(unittest.TestCase):
     def setUp(self):
@@ -18,6 +21,7 @@ class TestSythonInterpreter(unittest.TestCase):
         self.assertEqual(self.sy.atom("42"), 42)
         self.assertEqual(self.sy.atom("3.14"), 3.14)
         self.assertEqual(self.sy.atom("x"), "x")
+        self.assertEqual(self.sy.atom("some_string"), "some_string")
 
     def test_extend_env(self):
         base_env = {'x': 10}
@@ -82,6 +86,25 @@ class TestSythonInterpreter(unittest.TestCase):
         with self.assertRaises(ZeroDivisionError) as context:
             self.sy.run("( / 1 0 )")  # Attempting to divide by zero
         self.assertIn("Division by zero is undefined", str(context.exception))
+
+    def test_display_string(self):
+        code = '(display "hello")'
+        expected_output = "hello"
+
+        with patch('sys.stdout', new=StringIO()) as fake_out:
+            self.sy.run(code)  # Run the code that uses the display function
+            output = fake_out.getvalue().strip()  # Capture the printed output
+
+        self.assertEqual(output, expected_output, f"Expected '{expected_output}', got '{output}'")
+
+    def test_operator_type_error(self):
+        code = '(+ 1 "two" 3)'
+        try:
+            self.sy.run(code)
+        except TypeError as e:
+            assert str(e) == "Operator '+' requires all arguments to be numbers, got: [1, 'two', 3]"
+        else:
+            assert False, "TypeError was not raised"
 
 
 if __name__ == '__main__':
