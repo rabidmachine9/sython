@@ -89,6 +89,7 @@ class SythonInterpreter:
             'display': self._display_fn,
             'map': self._map_fn,  # Add map to the environment
             'filter': self._filter_fn,
+            'reduce': self._reduce_fn,
         }
         return env
 
@@ -103,6 +104,16 @@ class SythonInterpreter:
             raise TypeError("filter expects a list as the second argument")
         # Apply the predicate (lambda) to each element and filter those that return True
         return [x for x in lst if predicate(x)]
+
+    def _reduce_fn(self, func, lst):
+        """Reduce the list using the provided function."""
+        if not lst:
+            raise ValueError("Cannot reduce an empty list")
+        result = lst[0]
+        for item in lst[1:]:
+            result = func(result, item)
+        return result
+
 
     def _length(self, x):
         if isinstance(x, (list, str)):

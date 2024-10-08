@@ -140,6 +140,11 @@ class TestSythonInterpreter(unittest.TestCase):
         self.assertEqual(self.sy.run("(filter is-even '(1 2 3 4 5 6))"), [2, 4, 6])
         self.assertEqual(self.sy.run("(filter is-even '(7 8 9 10))"), [8, 10])
 
+    def test_reduce(self):
+        self.sy.run("(define sum (lambda (a b) (+ a b)))")
+        self.assertEqual(self.sy.run("(reduce sum '(1 2 3 4 5))"), 15)
+        self.sy.run("(define multiply (lambda (a b) (* a b)))")
+        self.assertEqual(self.sy.run("(reduce multiply '(1 2 3 4))"), 24)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
