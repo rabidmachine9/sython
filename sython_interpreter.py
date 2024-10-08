@@ -11,12 +11,22 @@ class SythonInterpreter:
     def __init__(self, debug=False):
         self.env = self.standard_env()
         self.debug = debug  # Add a debug flag
+        self.line_number = 1  # Initialize line number
 
     # Tokenizer: Convert source code into a list of tokens
     def tokenize(self, source_code):
-        source_code = source_code.split(';')[0]  # Ignore comments
-        source_code = source_code.replace("'", " ' ")  # Ensure quote is treated as a separate token
-        tokens = source_code.replace('(', ' ( ').replace(')', ' ) ').split()
+        # Reset line number for each tokenization
+        self.line_number = 1
+        lines = source_code.split('\n')
+        tokens = []
+
+        for line in lines:
+            line = line.split(';')[0]  # Ignore comments
+            line = line.replace("'", " ' ")  # Ensure quote is treated as a separate token
+            tokens_line = line.replace('(', ' ( ').replace(')', ' ) ').split()
+            tokens.extend(tokens_line)
+            self.line_number += 1  # Increment line number for each line
+
         if self.debug:
             print(f"[DEBUG] Tokens: {tokens}")
         return tokens
@@ -24,7 +34,7 @@ class SythonInterpreter:
     # Parser: Convert tokens into a nested list (abstract syntax tree)
     def parse(self, tokens):
         if len(tokens) == 0:
-            raise SyntaxError("unexpected EOF while reading")
+            raise SyntaxError("unexpected EOF while reading at line {self.line_number}")
         token = tokens.pop(0)
         if token == '(':
             L = []
@@ -35,7 +45,7 @@ class SythonInterpreter:
                 print(f"[DEBUG] Parsed expression: {L}")
             return L
         elif token == ')':
-            raise SyntaxError("unexpected )")
+            raise SyntaxError("unexpected ')' at line {self.line_number}")
         elif token == "'":  # Handle quoted expressions
             return ['quote', self.parse(tokens)]
         else:
@@ -164,7 +174,7 @@ class SythonInterpreter:
                 args = [self.evaluate(arg, env) for arg in expr[1:]]
                 # Check if all arguments are numbers
                 if not all(isinstance(arg, (int, float)) for arg in args):
-                    raise TypeError(f"Operator '{op}' requires all arguments to be numbers, got: {args}")
+                    raise TypeError(f"Operator '{op}' requires all arguments to be numbers, got: {args} at line {self.line_number}")
                 
                 if op == '+':
                     return sum(args)
@@ -177,7 +187,7 @@ class SythonInterpreter:
                     return result
                 elif op == '/':
                     if args[1] == 0:
-                        raise ZeroDivisionError("Division by zero is undefined")  # Raise an error for division by zero
+                        raise ZeroDivisionError("Division by zero is undefined at line {self.line_number}")  # Raise an error for division by zero
                     return args[0] / args[1]
 
             # Function call

@@ -102,7 +102,7 @@ class TestSythonInterpreter(unittest.TestCase):
         try:
             self.sy.run(code)
         except TypeError as e:
-            assert str(e) == "Operator '+' requires all arguments to be numbers, got: [1, 'two', 3]"
+            assert "Operator '+' requires all arguments to be numbers, got: [1, 'two', 3]" in str(e)
         else:
             assert False, "TypeError was not raised"
 
