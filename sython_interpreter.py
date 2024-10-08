@@ -176,6 +176,11 @@ class SythonInterpreter:
                 self._display_fn(*args)  # Call _display_fn with evaluated arguments
                 return None  # Display typically does not return a value
 
+            # Handle lambda expressions
+            elif op == 'lambda':
+                _, params, body = expr
+                return lambda *args: self.evaluate(body, self.extend_env(params, args))
+
             # Handle arithmetic operations
             elif op in {'+', '-', '*', '/'}:
                 args = [self.evaluate(arg, env) for arg in expr[1:]]

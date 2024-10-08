@@ -124,5 +124,13 @@ class TestSythonInterpreter(unittest.TestCase):
         else:
             assert False, "TypeError was not raised"
 
+    def test_lambda(self):
+        self.sy.run("(define (my-lambda x) (if (> x 2) 'yes 'no))")
+        self.assertEqual(self.sy.run("(my-lambda 3)"), 'yes')
+        self.assertEqual(self.sy.run("(my-lambda 1)"), 'no')
+
+    
+    
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
