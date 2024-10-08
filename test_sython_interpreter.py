@@ -106,6 +106,23 @@ class TestSythonInterpreter(unittest.TestCase):
         else:
             assert False, "TypeError was not raised"
 
+    def test_length(self):
+        code_list = '(length (quote (1 2 3 4 5)))'  # Testing length of a list
+        result_list = self.sy.run(code_list)
+        assert result_list == 5, f"Expected 5, got {result_list}"
+
+        code_string = '(length "hello")'  # Testing length of a string
+        result_string = self.sy.run(code_string)
+        assert result_string == 5, f"Expected 5, got {result_string}"
+
+        #Optionally, test an invalid input (like a number) to ensure error handling works
+        code_invalid = '(length 123)'
+        try:
+            self.sy.run(code_invalid)
+        except TypeError as e:
+            assert "Argument must be a list or string" in str(e)
+        else:
+            assert False, "TypeError was not raised"
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

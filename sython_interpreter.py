@@ -83,11 +83,18 @@ class SythonInterpreter:
             'car': lambda lst: lst[0],  # First element of a list
             'cdr': lambda lst: lst[1:], # Rest of the list after the first element
             'cons': lambda x, y: [x] + (y if isinstance(y, list) else [y]),  # Create a new list with x as head and y as tail
+            'length': self._length,
             '#t': True,                 # True value
             '#f': False,                # False value
             'display': self._display_fn,
         }
         return env
+
+    def _length(self, x):
+        if isinstance(x, (list, str)):
+            return len(x)
+        else:
+            raise TypeError(f"Argument must be a list or string at line {self.line_number}")
 
     def _display_fn(self, *args):
         """Custom display function for the interpreter."""
