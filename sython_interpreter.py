@@ -1,11 +1,5 @@
 import operator
-
-class Symbol(str):
-    """A symbol is a unique string that is used as an identifier."""
-    def __repr__(self):
-        return f"'{self}'"  # Return the symbol in quoted form for clarity
-
-
+from Symbol import Symbol
 
 class SythonInterpreter:
     def __init__(self, debug=False):
@@ -65,6 +59,39 @@ class SythonInterpreter:
                 else:
                     return Symbol(token)  # Anything else is treated as a symbol
 
+     # Define the map function
+
+    def _map_fn(self, func, lst):
+        """Applies a function to each element in the list."""
+        return [func(x) for x in lst]
+
+    def _filter_fn(self, predicate, lst):
+        """Custom filter function implementation."""
+        if not isinstance(lst, list):
+            raise TypeError("filter expects a list as the second argument")
+        # Apply the predicate (lambda) to each element and filter those that return True
+        return [x for x in lst if predicate(x)]
+
+    def _reduce_fn(self, func, lst):
+        """Reduce the list using the provided function."""
+        if not lst:
+            raise ValueError("Cannot reduce an empty list")
+        result = lst[0]
+        for item in lst[1:]:
+            result = func(result, item)
+        return result
+
+    def _length(self, x):
+        if isinstance(x, (list, str)):
+            return len(x)
+        else:
+            raise TypeError(f"Argument must be a list or string at line {self.line_number}")
+
+    def _display_fn(self, *args):
+        """Custom display function for the interpreter."""
+        output = ' '.join(map(str, args))  # Convert all arguments to strings
+        print(output, end='')  # Print without a newline
+        return None  # Typically, display does not return a value
 
     # Standard environment with basic operations
     def standard_env(self):
@@ -92,40 +119,6 @@ class SythonInterpreter:
             'reduce': self._reduce_fn,
         }
         return env
-
-    # Define the map function
-    def _map_fn(self, func, lst):
-        """Applies a function to each element in the list."""
-        return [func(x) for x in lst]
-
-    def _filter_fn(self, predicate, lst):
-        """Custom filter function implementation."""
-        if not isinstance(lst, list):
-            raise TypeError("filter expects a list as the second argument")
-        # Apply the predicate (lambda) to each element and filter those that return True
-        return [x for x in lst if predicate(x)]
-
-    def _reduce_fn(self, func, lst):
-        """Reduce the list using the provided function."""
-        if not lst:
-            raise ValueError("Cannot reduce an empty list")
-        result = lst[0]
-        for item in lst[1:]:
-            result = func(result, item)
-        return result
-
-
-    def _length(self, x):
-        if isinstance(x, (list, str)):
-            return len(x)
-        else:
-            raise TypeError(f"Argument must be a list or string at line {self.line_number}")
-
-    def _display_fn(self, *args):
-        """Custom display function for the interpreter."""
-        output = ' '.join(map(str, args))  # Convert all arguments to strings
-        print(output, end='')  # Print without a newline
-        return None  # Typically, display does not return a value
 
     # Create a new environment with parameters bound to argument values
     def extend_env(self, params, args):
@@ -179,27 +172,6 @@ class SythonInterpreter:
                 expr = then_expr if self.evaluate(condition, env) else else_expr
                 continue  # Tail call optimization: continue with new expression
 
-            # Handle boolean operations
-            elif op == 'and':
-                return all(self.evaluate(arg, env) for arg in expr[1:])
-            elif op == 'or':
-                return any(self.evaluate(arg, env) for arg in expr[1:])
-            elif op == 'not':
-                return not self.evaluate(expr[1], env)
-
-            # Handle list operations
-            elif op == 'car':
-                return self.evaluate(expr[1], env)[0]
-            elif op == 'cdr':
-                return self.evaluate(expr[1], env)[1:]
-            elif op == 'cons':
-                return env[op](self.evaluate(expr[1], env), self.evaluate(expr[2], env))
-
-            elif op == 'display':
-                 # Evaluate each argument and pass them to _display_fn
-                args = [self.evaluate(arg, env) for arg in expr[1:]]
-                self._display_fn(*args)  # Call _display_fn with evaluated arguments
-                return None  # Display typically does not return a value
 
             # Handle lambda expressions
             elif op == 'lambda':
@@ -213,16 +185,7 @@ class SythonInterpreter:
                 if not all(isinstance(arg, (int, float)) for arg in args):
                     raise TypeError(f"Operator '{op}' requires all arguments to be numbers, got: {args} at line {self.line_number}")
                 
-                if op == '+':
-                    return sum(args)
-                elif op == '-':
-                    return args[0] - sum(args[1:])
-                elif op == '*':
-                    result = 1
-                    for num in args:
-                        result *= num
-                    return result
-                elif op == '/':
+                if op == '/':
                     if args[1] == 0:
                         raise ZeroDivisionError("Division by zero is undefined at line {self.line_number}")  # Raise an error for division by zero
                     return args[0] / args[1]
