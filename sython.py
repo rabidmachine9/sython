@@ -1,9 +1,9 @@
 import sys
-from sython_interpreter import SythonInterpreter  # Import your interpreter class
+from sython_extended import SythonExtended  # Import your interpreter class
 
 def repl():
     """Basic REPL for the Sython interpreter."""
-    sython = SythonInterpreter()  # Instantiate the interpreter
+    sython = SythonExtended()  # Instantiate the interpreter
     print("Sython REPL - Scheme Interpreter")
     while True:
         try:
@@ -18,7 +18,7 @@ def repl():
 
 def run_script(file_path):
     """Run a .sy script file."""
-    sython = SythonInterpreter(debug=True)  # Instantiate the interpreter
+    sython = SythonExtended(debug=True)  # Instantiate the interpreter
     with open(file_path, 'r') as f:
         code = f.read()
     result = sython.run(code)  # Use the instance's run method
