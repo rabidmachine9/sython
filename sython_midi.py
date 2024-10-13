@@ -3,13 +3,19 @@ import time
 
 
 class SythonMidiMixin:
+    # Map for note names to MIDI note numbers
+    NOTE_TO_MIDI = {
+        'C': 0, 'C#': 1, 'Db': 1, 'D': 2, 'D#': 3, 'Eb': 3, 'E': 4, 'F': 5, 
+        'F#': 6, 'Gb': 6, 'G': 7, 'G#': 8, 'Ab': 8, 'A': 9, 'A#': 10, 'Bb': 10, 'B': 11
+    }
+
     def __init__(self):
         self.midi_output = None
 
     def add_midi_library(self, env):
         env['sendNote'] = self.send_note
         env['setTempo'] = self.set_tempo
-    
+
     def set_midi_output(self, port_name):
         """Set the MIDI output by specifying the port name."""
         try:
@@ -19,12 +25,14 @@ class SythonMidiMixin:
             print(f"Could not connect to MIDI output: {port_name}")
 
     def send_note(self, pitch, velocity, duration, channel=0):
-        """Send a MIDI note message."""
-        msg = mido.Message('note_on', note=pitch, velocity=velocity, channel=channel)
-        # Send the message via MIDI
-        # Assuming you have a midi output port initialized
-        self.midi_output.send(msg)
-        # Optionally add a delay for the duration
+        """Send a MIDI note message, supports both note names (e.g. C#3) and MIDI numbers."""
+        if isinstance(pitch, str):
+            pitch = self.parse_note_name(pitch)
+        if pitch is None:
+            raise ValueError(f"Invalid note: {pitch}")
+        
+        msg_on = mido.Message('note_on', note=pitch, velocity=velocity, channel=channel)
+        self.midi_output.send(msg_on)
         time.sleep(duration)
         msg_off = mido.Message('note_off', note=pitch, velocity=velocity, channel=channel)
         self.midi_output.send(msg_off)
@@ -32,4 +40,14 @@ class SythonMidiMixin:
     def set_tempo(self, bpm):
         """Set the tempo in beats per minute."""
         self.tempo = bpm
-        # Use this tempo for sequencing notes
+
+    def parse_note_name(self, note):
+        """Convert a note name like 'C#3' into a MIDI note number."""
+        note_name = note[:-1]  # Extract note name (e.g., "C#")
+        octave = note[-1]      # Extract octave (e.g., "3")
+        
+        if note_name in self.NOTE_TO_MIDI and octave.isdigit():
+            octave = int(octave)
+            midi_note_number = self.NOTE_TO_MIDI[note_name] + (octave + 1) * 12
+            return midi_note_number
+        return None
