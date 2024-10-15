@@ -2,7 +2,8 @@ import mido
 import tkinter as tk
 from tkinter import messagebox, scrolledtext
 from sython_extended import SythonExtended
-import sys
+import traceback
+
 
 class MidiApp:
     def __init__(self, root):
@@ -11,7 +12,7 @@ class MidiApp:
 
         # Interpreter
         self.interpreter = SythonExtended()
-
+        self.interpreter.debug = True
         # Variables
         self.midi_out = None
         self.message_log_text = tk.StringVar()
@@ -70,6 +71,9 @@ class MidiApp:
         self.editor.bind("<KeyRelease>", self.update_line_numbers)
         self.editor.bind("<MouseWheel>", self.update_line_numbers)
 
+        #default code
+        self.editor.insert(tk.END, "(setTempo 120)\n(sequencer 60  64)")
+
     def on_scroll(self, *args):
         """Handle synchronized scrolling for both editor and line numbers."""
         self.editor.yview(*args)
@@ -108,15 +112,27 @@ class MidiApp:
     def play_code(self):
         """Evaluates the code in the editor and sends MIDI messages."""
         code = self.editor.get('1.0', tk.END).strip()
-
+        #self.interpreter.play_pause()
         if code:
-            result = self.interpreter.run(code)
-            self.log_message(result)
+            try:
+                result = self.interpreter.run(code)
+                if result is None:
+                    self.log_message("Code executed successfully with no output.")
+                else:
+                    self.log_message(result)
+            except Exception as e:
+                error_msg = f"Error: {str(e)}"
+                self.log_message(error_msg)
+                print(error_msg)  # Print to terminal
+                traceback.print_exc()  # Print full error trace to terminal
         else:
             self.log_message("No code to evaluate.")
 
+
     def log_message(self, message):
         """Logs messages to the message log."""
+        if message is None:
+            message = "No output"  # or any default message
         self.message_log.insert(tk.END, message + "\n")
         self.message_log.yview(tk.END)
 
