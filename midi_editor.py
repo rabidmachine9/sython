@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import messagebox, scrolledtext
 from sython_extended import SythonExtended
 import traceback
-
+import threading
 
 class MidiApp:
     def __init__(self, root):
@@ -36,7 +36,7 @@ class MidiApp:
         self.create_editor_with_line_numbers()
 
         # Play button
-        self.play_button = tk.Button(self.root, text="Play", command=self.play_code)
+        self.play_button = tk.Button(self.root, text="Run", command=self.start_play_code)
         self.play_button.pack(pady=10)
 
         # Message log at the bottom
@@ -72,7 +72,7 @@ class MidiApp:
         self.editor.bind("<MouseWheel>", self.update_line_numbers)
 
         #default code
-        self.editor.insert(tk.END, "(setTempo 120)\n(sequencer 60  64)")
+        self.editor.insert(tk.END, "(playPause)\n(setTempo 120)\n(sequencer 60  64)")
 
     def on_scroll(self, *args):
         """Handle synchronized scrolling for both editor and line numbers."""
@@ -108,6 +108,11 @@ class MidiApp:
             self.interpreter.set_midi_output(selected_device)
         except Exception as e:
             self.log_message(f"Failed to connect to MIDI device: {e}")
+
+    def start_play_code(self):
+        # Create a new thread for the long-running task
+        thread = threading.Thread(target=self.play_code)
+        thread.start()
 
     def play_code(self):
         """Evaluates the code in the editor and sends MIDI messages."""
